@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Bug Fixes
 
+* **transforms:** use thread-local tree-sitter parsers to prevent pyo3 `Unsendable` panic when compression runs in `ThreadPoolExecutor` workers ([#604](https://github.com/chopratejas/headroom/pull/604))
+
+  **Note:** `unload_tree_sitter()` semantic change — now unloads parsers for the
+  **current thread only** (was: process-wide). Callers invoking it from a management
+  thread to free executor memory must call it from within each pool thread instead.
+
 * **ccr:** scope proactive expansion by workspace (cross-project leak) ([197601b](https://github.com/chopratejas/headroom/commit/197601bc64ee72e786bf6b94cd90efcac4269bcf))
 * **ccr:** scope proactive expansion by workspace (cross-project leak) ([1bc163f](https://github.com/chopratejas/headroom/commit/1bc163f5bc1a8422f9ad659061e1fdd8cfeb077b))
 * **codex:** keep init model_provider at config root ([#260](https://github.com/chopratejas/headroom/issues/260)) ([304dcc7](https://github.com/chopratejas/headroom/commit/304dcc78047bc744fc2f7656b484ec54dc271354))

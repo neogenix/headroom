@@ -61,7 +61,8 @@ _tree_sitter_available: bool | None = None
 # objects created on one thread panic if accessed from another.  threading.local()
 # ensures every thread maintains its own isolated set of parser instances.
 _tree_sitter_local = threading.local()
-_tree_sitter_lock = threading.Lock()
+# _tree_sitter_available is written at most once (None -> True/False) and reads of
+# bool are atomic under the CPython GIL, so no explicit lock is needed here.
 
 
 def _check_tree_sitter_available() -> bool:
@@ -106,7 +107,11 @@ def _get_parser(language: str) -> Any:
             from tree_sitter_language_pack import get_parser
 
             thread_parsers[language] = get_parser(language)  # type: ignore[arg-type]
-            logger.debug("Loaded tree-sitter parser for %s on thread %s", language, threading.current_thread().name)
+            logger.debug(
+                "Loaded tree-sitter parser for %s on thread %s",
+                language,
+                threading.current_thread().name,
+            )
         except Exception as e:
             raise ValueError(
                 f"Language '{language}' is not supported by tree-sitter. "
